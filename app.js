@@ -407,6 +407,7 @@ $('#btnCSV').onclick=()=>{
 
 /* ── Render general ── */
 function renderAll(){
+  buildFilterOptions();
   refreshDataList();
   renderDashboard();renderInventario();renderMovs();renderCompras();renderPersonas();
 }
