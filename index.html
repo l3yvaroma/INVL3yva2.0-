@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Almacén Pro Cloud</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@latest/latin-400-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@latest/latin-600-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@latest/latin-700-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/sora@latest/latin-700-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/sora@latest/latin-800-normal.css">
+<link rel="stylesheet" href="./styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ══════════ LOGIN SCREEN ══════════ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">Almacén<span>Pro</span></div>
+    <div class="login-sub">Sistema de inventario en la nube · Sincronizado en tiempo real</div>
+    <div class="login-tabs">
+      <div class="login-tab active" id="lt-entrar">Entrar</div>
+      <div class="login-tab" id="lt-registrar">Registrarse</div>
+    </div>
+    <div class="field" id="ff-nombre" style="display:none">
+      <label>Nombre completo</label>
+      <input id="li-nombre" placeholder="Tu nombre">
+    </div>
+    <div class="field">
+      <label>Correo electrónico</label>
+      <input id="li-email" type="email" placeholder="tucorreo@empresa.com">
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input id="li-pass" type="password" placeholder="Mínimo 6 caracteres">
+    </div>
+    <button class="btn btn-primary btn-block" id="li-btn">Entrar</button>
+    <div class="login-hint">El primer usuario es <b>Administrador</b>. Los demás quedan <b>pendientes</b> de aprobación.</div>
+  </div>
+</div>
+
+<!-- ══════════ APP CONTAINER ══════════ -->
+<div class="app">
+
+  <!-- ══════ SIDEBAR (desktop) ══════ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-ico">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+      </div>
+      <div><h1>Almacén Pro</h1><small>Cloud Edition</small></div>
+    </div>
+    <nav class="nav">
+      <div class="nav-label">General</div>
+      <button class="nav-btn active" data-view="dashboard">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-btn" data-view="inventario">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+        Inventario
+      </button>
+      <div class="nav-label">Movimientos</div>
+      <button class="nav-btn" data-view="entradas">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="m6 11 6 6 6-6"/><path d="M4 21h16"/></svg>
+        Entradas
+      </button>
+      <button class="nav-btn" data-view="salidas">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V9"/><path d="m6 13 6-6 6 6"/><path d="M4 3h16"/></svg>
+        Salidas
+      </button>
+      <button class="nav-btn" data-view="compras">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1.6"/><circle cx="19" cy="21" r="1.6"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57L22.5 7H5.12"/></svg>
+        Compras <span class="nav-badge" id="badgeCompras">0</span>
+      </button>
+      <div class="nav-label">Gestión</div>
+      <button class="nav-btn" data-view="personas">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        Personas
+      </button>
+    </nav>
+    <div class="side-foot">
+      <button class="nav-btn" id="btnAI">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        Asistente IA
+      </button>
+      <button class="nav-btn" id="btnHelp">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+        Ayuda
+      </button>
+      <button class="nav-btn" id="btnLogout">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <!-- ══════ MAIN CONTENT ══════ -->
+  <main class="main">
+
+    <!-- ===== DASHBOARD ===== -->
+    <section class="view active" id="view-dashboard">
+      <div class="topbar">
+        <div><h2>Dashboard</h2><p>Resumen general del estado del almacén</p></div>
+        <div class="today" id="todayTxt"></div>
+      </div>
+      <div class="grid stats">
+        <div class="stat"><div class="stat-ico" style="background:#e0f2fe;color:#0369a1"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/></svg></div><div><div class="stat-num" id="stTotal">0</div><div class="stat-lbl">Artículos</div></div></div>
+        <div class="stat"><div class="stat-ico" style="background:#d1fae5;color:#047857"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg></div><div><div class="stat-num" id="stOk">0</div><div class="stat-lbl">Stock OK</div></div></div>
+        <div class="stat"><div class="stat-ico" style="background:#fef3c7;color:#b45309"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div><div><div class="stat-num" id="stPedir">0</div><div class="stat-lbl">Por pedir</div></div></div>
+        <div class="stat"><div class="stat-ico" style="background:#ccfbf1;color:#0f766e"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg></div><div><div class="stat-num" id="stUnits">0</div><div class="stat-lbl">Existencias</div></div></div>
+      </div>
+      <div class="grid dash-2">
+        <div class="card"><div class="card-h"><div><h3>Estado del inventario</h3><div class="sub">OK vs. pendientes</div></div></div><div class="card-b"><div class="chart-box"><canvas id="chEstados"></canvas></div></div></div>
+        <div class="card"><div class="card-h"><div><h3>Por categoría</h3><div class="sub">Distribución</div></div></div><div class="card-b"><div class="chart-box"><canvas id="chCategorias"></canvas></div></div></div>
+      </div>
+      <div class="grid dash-3">
+        <div class="card"><div class="card-h"><div><h3>🔥 Urgentes</h3><div class="sub">Más críticos</div></div><button class="btn btn-ghost btn-sm" data-goto="compras">Ver todo →</button></div><div class="card-b" id="urgentList"></div></div>
+        <div class="card"><div class="card-h"><div><h3>Movimientos recientes</h3><div class="sub">Últimos</div></div></div><div class="card-b" id="movList"></div></div>
+      </div>
+    </section>
+
+    <!-- ===== INVENTARIO ===== -->
+    <section class="view" id="view-inventario">
+      <div class="topbar">
+        <div><h2>Inventario</h2><p>Administre los artículos del almacén</p></div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" id="btnCSV">Exportar CSV</button>
+          <button class="btn btn-primary" id="btnNew">+ Nuevo artículo</button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="search"><input type="text" id="invSearch" placeholder="Buscar..."></div>
+        <select class="flt" id="fEstado"><option value="">Estado: todos</option><option>OK</option><option>PEDIR</option></select>
+        <select class="flt" id="fUbic"><option value="">Ubicación: todas</option></select>
+        <select class="flt" id="fCat"><option value="">Categoría: todas</option></select>
+      </div>
+      <div class="card"><div class="tbl-wrap"><table><thead><tr>
+        <th data-sort="codigo">Código</th><th data-sort="desc">Descripción</th><th data-sort="cat">Categoría</th><th>Unidad</th><th data-sort="stock">Stock</th><th data-sort="min">Mínimo</th><th data-sort="estado">Estado</th><th data-sort="ubic">Ubicación</th><th style="text-align:right">Acciones</th>
+      </tr></thead><tbody id="invBody"></tbody></table></div></div>
+    </section>
+
+    <!-- ===== ENTRADAS ===== -->
+    <section class="view" id="view-entradas">
+      <div class="topbar"><div><h2>Entradas</h2><p>Registre ingresos de mercancía</p></div></div>
+      <div class="card mv-form"><div class="card-h"><h3>➕ Registrar entrada</h3></div>
+        <div class="card-b"><form id="formEntrada" class="mv-row">
+          <div class="field"><label>Fecha</label><input type="date" id="entFecha" required></div>
+          <div class="field"><label>Artículo</label><input list="dlItems" id="entArt" placeholder="Seleccione..." required></div>
+          <div class="field"><label>Cantidad</label><input type="number" id="entCant" min="1" value="1" required></div>
+          <div class="field"><label>Proveedor</label><input type="text" id="entProv" placeholder="Nombre"></div>
+          <button class="btn btn-primary" type="submit">Registrar</button>
+        </form></div>
+      </div>
+      <div class="card"><div class="card-h"><h3>Bitácora</h3></div><div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>Artículo</th><th>Cantidad</th><th>Proveedor</th><th style="text-align:right">Acciones</th></tr></thead><tbody id="entBody"></tbody></table></div></div>
+    </section>
+
+    <!-- ===== SALIDAS ===== -->
+    <section class="view" id="view-salidas">
+      <div class="topbar"><div><h2>Salidas</h2><p>Registre el retiro de material</p></div></div>
+      <div class="card mv-form"><div class="card-h"><h3>➖ Registrar salida</h3></div>
+        <div class="card-b"><form id="formSalida" class="mv-row">
+          <div class="field"><label>Fecha</label><input type="date" id="salFecha" required></div>
+          <div class="field"><label>Artículo</label><input list="dlItems" id="salArt" placeholder="Seleccione..." required></div>
+          <div class="field"><label>Cantidad</label><input type="number" id="salCant" min="1" value="1" required></div>
+          <div class="field"><label>Responsable</label><input type="text" id="salResp" placeholder="Quién retira" required></div>
+          <button class="btn btn-danger" type="submit">Registrar</button>
+        </form></div>
+      </div>
+      <div class="card"><div class="card-h"><h3>Bitácora</h3></div><div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>Artículo</th><th>Cantidad</th><th>Responsable</th><th style="text-align:right">Acciones</th></tr></thead><tbody id="salBody"></tbody></table></div></div>
+    </section>
+
+    <!-- ===== COMPRAS ===== -->
+    <section class="view" id="view-compras">
+      <div class="topbar"><div><h2>Sugerencias de compra</h2><p>Artículos en estado PEDIR</p></div></div>
+      <div class="card"><div class="card-h"><h3>Pendientes</h3></div><div class="tbl-wrap"><table><thead><tr><th>Código</th><th>Descripción</th><th>Stock</th><th>Mínimo</th><th>Sugerencia</th><th>Ubicación</th><th style="text-align:right">Acción</th></tr></thead><tbody id="cmpBody"></tbody></table></div></div>
+    </section>
+
+    <!-- ===== PERSONAS ===== -->
+    <section class="view" id="view-personas">
+      <div class="topbar"><div><h2>Personas</h2><p>Responsables y asignaciones</p></div><button class="btn btn-primary" id="btnNewPerson">+ Nueva persona</button></div>
+      <div class="grid grid-personas" id="personasList"></div>
+    </section>
+
+  </main>
+
+  <!-- ══════ BOTTOM NAV (mobile) ══════ -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-view="dashboard"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span>Dashboard</span></button>
+    <button class="nav-item" data-view="inventario"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/></svg><span>Inventario</span></button>
+    <button class="nav-item" data-view="entradas"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="m6 11 6 6 6-6"/><path d="M4 21h16"/></svg><span>Entradas</span></button>
+    <button class="nav-item" data-view="salidas"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V9"/><path d="m6 13 6-6 6 6"/><path d="M4 3h16"/></svg><span>Salidas</span></button>
+    <button class="nav-item" data-view="compras"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1.6"/><circle cx="19" cy="21" r="1.6"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57L22.5 7H5.12"/></svg><span>Compras</span></button>
+  </nav>
+</div>
+
+<!-- ══════════ MODALES ══════════ -->
+<div class="overlay" id="ovItem"><div class="modal"><div class="modal-h"><h3 id="itemModalTitle">Nuevo artículo</h3><button class="icon-btn" data-close="ovItem">✕</button></div>
+  <div class="modal-b"><form class="frm" id="formItem">
+    <div class="frm-2"><div class="field"><label>Código</label><input id="itCodigo" placeholder="Ej: BPU"></div><div class="field"><label>Categoría *</label><input id="itCat" placeholder="Ej: Herramientas" required></div></div>
+    <div class="field"><label>Descripción *</label><input id="itDesc" placeholder="Nombre del artículo" required></div>
+    <div class="frm-3"><div class="field"><label>Unidad</label><select id="itUnd"><option>UNIDADES</option><option>CAJAS</option><option>ROLLO</option><option>PAR</option><option>LIBRAS</option><option>METROS</option><option>GALONES</option></select></div><div class="field"><label>Stock actual</label><input type="number" id="itStock" min="0" value="0"></div><div class="field"><label>Stock mínimo</label><input type="number" id="itMin" min="0" value="20"></div></div>
+    <div class="field"><label>Ubicación</label><select id="itUbic"><option>BODEGA #1</option><option>BODEGA #2</option><option>BODEGA #3</option><option>PATIO</option><option>OFICINA</option></select></div>
+    <div class="field"><label>Notas</label><textarea id="itNotas" placeholder="Observaciones..."></textarea></div>
+  </form></div>
+  <div class="modal-f"><button class="btn btn-ghost" data-close="ovItem">Cancelar</button><button class="btn btn-primary" id="btnSaveItem">Guardar</button></div>
+</div></div>
+
+<div class="overlay" id="ovPerson"><div class="modal"><div class="modal-h"><h3>Nueva persona</h3><button class="icon-btn" data-close="ovPerson">✕</button></div>
+  <div class="modal-b"><form class="frm" id="formPerson">
+    <div class="field"><label>Nombre completo *</label><input id="perNombre" placeholder="Ej: Juan Pérez" required></div>
+    <div class="field"><label>Cargo / área</label><input id="perCargo" placeholder="Ej: Residente de obra"></div>
+  </form></div>
+  <div class="modal-f"><button class="btn btn-ghost" data-close="ovPerson">Cancelar</button><button class="btn btn-primary" id="btnSavePerson">Guardar</button></div>
+</div></div>
+
+<div class="overlay" id="ovConfirm"><div class="modal sm"><div class="modal-h"><h3>⚠️ Confirmar</h3></div>
+  <div class="modal-b"><p id="cfMsg"></p></div>
+  <div class="modal-f"><button class="btn btn-ghost" data-close="ovConfirm">Cancelar</button><button class="btn btn-danger" id="btnConfirmYes">Sí, continuar</button></div>
+</div></div>
+
+<div class="overlay" id="ovHelp"><div class="modal"><div class="modal-h"><h3>📖 Instrucciones</h3><button class="icon-btn" data-close="ovHelp">✕</button></div>
+  <div class="modal-b"><p>Sistema de inventario en la nube. Todos los datos se sincronizan en tiempo real.</p></div>
+  <div class="modal-f"><button class="btn btn-primary" data-close="ovHelp">Entendido</button></div>
+</div></div>
+
+<div class="overlay" id="ovAI"><div class="modal"><div class="modal-h"><h3>🤖 Asistente IA</h3><button class="icon-btn" data-close="ovAI">✕</button></div>
+  <div class="modal-b"><div class="ai-chat" id="aiChat"></div><div class="ai-input-area"><input class="ai-input" id="aiInput" placeholder="Escribe tu instrucción..."><button class="btn btn-primary" id="aiSend">Enviar</button></div></div>
+</div></div>
+
+<div id="toasts"></div>
+<datalist id="dlItems"></datalist>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>
