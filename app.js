@@ -319,10 +319,12 @@ function drawCharts(ok,pedir){
 /* ── Inventario ── */
 let sortKey='desc',sortDir=1,editingId=null;
 function buildFilterOptions(){
+  const fc=$('#fCat').value, fu=$('#fUbic').value;
   const cats=[...new Set(db.items.map(i=>i.cat).filter(Boolean))].sort();
   const ubis=[...new Set(db.items.map(i=>i.ubic).filter(Boolean))].sort();
   $('#fCat').innerHTML='<option value="">Categoría: todas</option>'+cats.map(c=>'<option>'+esc(c)+'</option>').join('');
   $('#fUbic').innerHTML='<option value="">Ubicación: todas</option>'+ubis.map(u=>'<option>'+esc(u)+'</option>').join('');
+  $('#fCat').value=fc; $('#fUbic').value=fu;
 }
 function renderInventario(){
   const q=$('#invSearch').value.trim().toLowerCase();
@@ -509,4 +511,143 @@ $('#aiSend').onclick=async()=>{
 /* ── Ayuda ── */
 $('#btnHelp').onclick=()=>$('#ovHelp').classList.add('show');
 
-/* ══════════ FIN DE app.js ══════════ */
+/* ════════════════════════════════════════════════════════════
+   PARTE 5: GESTIÓN DE PERSONAS (editar / borrar / asignaciones)
+════════════════════════════════════════════════════════════ */
+let currentPersonId=null, editingPersonId=null, editingAsignId=null;
+
+/* ── Modales inyectados ── */
+document.body.insertAdjacentHTML('beforeend',
+'<div class="overlay" id="ovPersonDetail"><div class="modal"><div class="modal-h"><h3 id="pdTitle">Persona</h3><button class="icon-btn" data-close="ovPersonDetail">✕</button></div><div class="modal-b" id="pdBody"></div><div class="modal-f"><button class="btn btn-ghost" data-close="ovPersonDetail">Cerrar</button><button class="btn btn-primary" id="pdAssign">＋ Asignar artículo</button></div></div></div>'+
+'<div class="overlay" id="ovAssign"><div class="modal"><div class="modal-h"><h3 id="asTitle">Asignar artículo</h3><button class="icon-btn" data-close="ovAssign">✕</button></div><div class="modal-b"><form class="frm" id="formAssign"><input type="hidden" id="asPersonId"><div class="field"><label>Artículo *</label><input list="dlItems" id="asArt" required></div><div class="frm-2"><div class="field"><label>Cantidad *</label><input type="number" id="asCant" min="1" value="1" required></div><div class="field"><label>Ubicación</label><input id="asUbic" placeholder="Obra / patio..."></div></div><div class="field"><label>Notas</label><input id="asNotas" placeholder="Observaciones..."></div></form></div><div class="modal-f"><button class="btn btn-ghost" data-close="ovAssign">Cancelar</button><button class="btn btn-primary" id="btnSaveAssign">Guardar</button></div></div></div>');
+
+/* Cierre genérico de overlays (incluye los nuevos) */
+document.addEventListener('click',e=>{const c=e.target.closest('[data-close]');if(c){const o=$('#'+c.dataset.close);if(o)o.classList.remove('show')}});
+
+const personAssignments=pid=>db.movimientos.filter(m=>m.tipo==='asignacion'&&m.personaId===pid);
+
+/* ── Render personas con botones ── */
+function renderPersonas(){
+  $('#personasList').innerHTML=db.personas.length?db.personas.map(p=>{
+    const asig=personAssignments(p.id);
+    return '<div class="person-card" data-pd="'+p.id+'">'+
+      '<div class="person-head"><div class="person-avatar">'+esc((p.nombre||'?').charAt(0))+'</div>'+
+      '<div><div class="person-name">'+esc(p.nombre)+'</div><div class="person-role">'+esc(p.cargo||'Sin cargo')+'</div></div>'+
+      '<div style="margin-left:auto;display:flex;gap:6px">'+
+      '<button class="icon-btn" data-pedit="'+p.id+'" title="Editar">✏️</button>'+
+      '<button class="icon-btn del" data-pdel="'+p.id+'" title="Eliminar">🗑️</button></div></div>'+
+      '<div class="person-row"><span>Asignaciones</span><b>'+asig.length+'</b></div>'+
+      '<div class="hint" style="margin-top:6px">Toca la tarjeta para ver y editar sus asignaciones</div></div>';
+  }).join(''):'<div class="empty"><b>Sin personas</b>Crea la primera con el botón superior.</div>';
+}
+
+/* ── Clic en lista de personas ── */
+$('#personasList').addEventListener('click',e=>{
+  const ed=e.target.closest('[data-pedit]');
+  const dl=e.target.closest('[data-pdel]');
+  const card=e.target.closest('[data-pd]');
+  if(ed){openPersonEdit(ed.dataset.pedit);return}
+  if(dl){deletePerson(dl.dataset.pdel);return}
+  if(card){openPersonDetail(card.dataset.pd)}
+});
+
+/* ── Editar persona ── */
+function openPersonEdit(id){
+  const p=db.personas.find(x=>x.id===id);if(!p)return;
+  editingPersonId=id;
+  $('#perNombre').value=p.nombre;$('#perCargo').value=p.cargo||'';
+  $('#ovPerson .modal-h h3').textContent='Editar persona';
+  $('#ovPerson').classList.add('show');
+}
+$('#btnNewPerson').onclick=()=>{editingPersonId=null;$('#perNombre').value='';$('#perCargo').value='';$('#ovPerson .modal-h h3').textContent='Nueva persona';$('#ovPerson').classList.add('show')};
+$('#btnSavePerson').onclick=()=>{
+  const n=$('#perNombre').value.trim();if(!n)return toast('Nombre obligatorio','err');
+  const data={nombre:n,cargo:$('#perCargo').value.trim()};
+  if(editingPersonId){updateDoc(doc(fdb,'personas',editingPersonId),data);toast('Persona actualizada','ok')}
+  else{addDoc(collection(fdb,'personas'),data);toast('Persona guardada','ok')}
+  $('#ovPerson').classList.remove('show');editingPersonId=null;
+};
+
+/* ── Eliminar persona (devuelve stock de sus asignaciones) ── */
+function deletePerson(id){
+  const p=db.personas.find(x=>x.id===id);if(!p)return;
+  const asig=personAssignments(id);
+  askConfirm('¿Eliminar a «'+p.nombre+'»?'+(asig.length?' Se quitarán '+asig.length+' asignación(es) y el stock volverá al almacén.':''),async()=>{
+    for(const m of asig){
+      if(m.artId)updateDoc(doc(fdb,'items',m.artId),{stock:((db.items.find(i=>i.id===m.artId)||{}).stock||0)+m.cant});
+      await deleteDoc(doc(fdb,'movimientos',m.id));
+    }
+    await deleteDoc(doc(fdb,'personas',id));
+    toast('Persona eliminada','warn');
+  });
+}
+
+/* ── Detalle de persona (asignaciones) ── */
+function openPersonDetail(id){
+  const p=db.personas.find(x=>x.id===id);if(!p)return;
+  currentPersonId=id;
+  $('#pdTitle').textContent='👤 '+p.nombre;
+  const asig=personAssignments(id);
+  $('#pdBody').innerHTML=asig.length?asig.map(m=>{
+    return '<div class="person-row" style="align-items:center"><div><b>'+esc(m.art)+'</b><div class="hint">📍 '+esc(m.ubic||'—')+' · '+fmtFecha(m.fecha)+'</div></div>'+
+    '<div style="display:flex;gap:6px;align-items:center"><b>'+m.cant+'</b>'+
+    '<button class="icon-btn" data-aedit="'+m.id+'">✏️</button>'+
+    '<button class="icon-btn del" data-adel="'+m.id+'">🗑️</button></div></div>';
+  }).join(''):'<div class="empty"><b>Sin asignaciones</b>Usa «＋ Asignar artículo».</div>';
+  $('#ovPersonDetail').classList.add('show');
+}
+$('#pdBody').addEventListener('click',e=>{
+  const ed=e.target.closest('[data-aedit]');
+  const dl=e.target.closest('[data-adel]');
+  if(ed)openAssignEdit(ed.dataset.aedit);
+  if(dl)deleteAsign(dl.dataset.adel);
+});
+$('#pdAssign').onclick=()=>{openAssignNew(currentPersonId)};
+
+/* ── Asignar artículo a persona ── */
+function openAssignNew(pid){
+  editingAsignId=null;$('#asPersonId').value=pid;
+  $('#asArt').value='';$('#asCant').value=1;$('#asUbic').value='';$('#asNotas').value='';
+  $('#asTitle').textContent='Asignar artículo';
+  $('#ovAssign').classList.add('show');
+}
+function openAssignEdit(mid){
+  const m=db.movimientos.find(x=>x.id===mid);if(!m)return;
+  editingAsignId=mid;$('#asPersonId').value=m.personaId;
+  $('#asArt').value=m.art;$('#asCant').value=m.cant;$('#asUbic').value=m.ubic||'';$('#asNotas').value=m.notas||'';
+  $('#asTitle').textContent='Editar asignación';
+  $('#ovAssign').classList.add('show');
+}
+$('#btnSaveAssign').onclick=()=>{
+  const pid=$('#asPersonId').value;
+  const art=$('#asArt').value.trim(),cant=parseInt($('#asCant').value,10);
+  if(!art||!cant||cant<1)return toast('Completa artículo y cantidad','err');
+  const it=matchItem(art);
+  if(editingAsignId){
+    const m=db.movimientos.find(x=>x.id===editingAsignId);if(!m)return;
+    const delta=cant-m.cant;
+    if(it&&delta>0&&(typeof it.stock!=='number'||delta>it.stock))return toast('Stock insuficiente','err');
+    if(it)updateDoc(doc(fdb,'items',it.id),{stock:(typeof it.stock==='number'?it.stock:0)-delta});
+    updateDoc(doc(fdb,'movimientos',editingAsignId),{art:it?it.desc:art.toUpperCase(),artId:it?it.id:m.artId,cant,ubic:$('#asUbic').value.trim(),notas:$('#asNotas').value.trim()});
+    toast('Asignación actualizada','ok');
+  }else{
+    if(it&&(typeof it.stock!=='number'||cant>it.stock))return toast('Stock insuficiente: solo hay '+(it.stock||0),'err');
+    if(it)updateDoc(doc(fdb,'items',it.id),{stock:(typeof it.stock==='number'?it.stock:0)-cant});
+    addDoc(collection(fdb,'movimientos'),{tipo:'asignacion',personaId:pid,art:it?it.desc:art.toUpperCase(),artId:it?it.id:null,cant,ubic:$('#asUbic').value.trim(),notas:$('#asNotas').value.trim(),fecha:hoyISO(),user:currentUser?currentUser.email:''});
+    toast('Artículo asignado','ok');
+  }
+  $('#ovAssign').classList.remove('show');editingAsignId=null;
+  if(currentPersonId)openPersonDetail(currentPersonId);
+};
+
+/* ── Eliminar asignación (devuelve stock) ── */
+function deleteAsign(mid){
+  const m=db.movimientos.find(x=>x.id===mid);if(!m)return;
+  askConfirm('¿Quitar esta asignación? El stock ('+m.cant+') volverá al almacén.',async()=>{
+    if(m.artId)updateDoc(doc(fdb,'items',m.artId),{stock:((db.items.find(i=>i.id===m.artId)||{}).stock||0)+m.cant});
+    await deleteDoc(doc(fdb,'movimientos',mid));
+    toast('Asignación eliminada, stock devuelto','warn');
+    if(currentPersonId)openPersonDetail(currentPersonId);
+  });
+}
+/* ══════════ FIN PARTE 5 ══════════ */
