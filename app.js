@@ -409,7 +409,11 @@ $('#btnCSV').onclick=()=>{
 function renderAll(){
   buildFilterOptions();
   refreshDataList();
-  renderDashboard();renderInventario();renderMovs();renderCompras();renderPersonas();
+  renderDashboard();
+  renderInventario();
+  renderMovs();
+  renderCompras();
+  if(window.renderPersonasHook){window.renderPersonasHook()}else{renderPersonas()}
 }
 (function init(){
   const f=new Date();
